@@ -1,5 +1,23 @@
 const taskContainer = document.querySelector(".task-container");
+const form = document.querySelector("form");
 const deleteButton = document.getElementById("delete-button");
+
+//globalStore array
+const globalStore = [];
+
+const loadInitialCards = () => {
+  //access localstorage
+  const getInitialData = localStorage.getItem("cards");
+  if (!getInitialData) return;
+  //converting stringified-array to array
+  const cards = JSON.parse(getInitialData);
+  //generating HTML card to inject on DOM
+  cards.forEach((card) => {
+    const createNewCard = newCard(card);
+    taskContainer.insertAdjacentHTML("beforeend", createNewCard);
+    globalStore.push(card);
+  });
+};
 
 // inserting new card
 const newCard = ({
@@ -40,8 +58,9 @@ const saveChanges = () => {
     taskDescription: document.getElementById("description").value,
   };
 
+  globalStore.push(taskData);
+  form.reset();
+  localStorage.setItem("cards", JSON.stringify(globalStore));
   const createNewCard = newCard(taskData);
   taskContainer.insertAdjacentHTML("beforeend", createNewCard);
 };
-
-
