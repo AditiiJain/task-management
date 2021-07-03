@@ -1,9 +1,8 @@
 const taskContainer = document.querySelector(".task-container");
 const form = document.querySelector("form");
-const deleteButton = document.getElementById("delete-button");
 
 //globalStore array
-const globalStore = [];
+let globalStore = [];
 
 const loadInitialCards = () => {
   //access localstorage
@@ -15,7 +14,7 @@ const loadInitialCards = () => {
   cards.forEach((card) => {
     const createNewCard = newCard(card);
     taskContainer.insertAdjacentHTML("beforeend", createNewCard);
-    globalStore.push(card);
+    globalStore.push(card); //beacause if we not do so after every load globalStore array vanishes and it will render nothing
   });
 };
 
@@ -26,12 +25,12 @@ const newCard = ({
   taskTitle,
   taskType,
   taskDescription,
-}) => `<div class="col-md-6 col-lg-4" id=${id}>
+}) => `<div class="col-md-6 col-lg-4 mt-4" id=${id}>
      <div class="card">
          <div class="card-header d-flex justify-content-end gap-2">
              <button type="button" class="btn btn-outline-success"> <i
                      class="fas fa-pencil-alt"></i></button>
-             <button type="button" class="btn btn-outline-danger"><i class="fas fa-trash"></i></button>
+             <button type="button" class="btn btn-outline-danger" id=${id}><i class="fas fa-trash" id=${id}></i></button>
 
          </div>
          <div class="card-img-container p-3">
@@ -49,6 +48,10 @@ const newCard = ({
      </div>
  </div>`;
 
+function updateLocalStorage() {
+  localStorage.setItem("cards", JSON.stringify(globalStore));
+}
+
 const saveChanges = () => {
   const taskData = {
     id: `${Date.now()}`, //unique number for card id
@@ -60,7 +63,25 @@ const saveChanges = () => {
 
   globalStore.push(taskData);
   form.reset();
-  localStorage.setItem("cards", JSON.stringify(globalStore));
+  updateLocalStorage();
   const createNewCard = newCard(taskData);
   taskContainer.insertAdjacentHTML("beforeend", createNewCard);
 };
+
+//deleting card by clicking trah button
+taskContainer.addEventListener("click", (e) => {
+  if (
+    (e.target.tagName === "BUTTON" || e.target.tagName === "I") &&
+    (e.target.classList.contains("btn-outline-danger") ||
+      e.target.classList.contains("fa-trash"))
+  ) {
+    const cardID = e.target.id;
+    Array.from(taskContainer.children).forEach((child) => {
+      if (child.getAttribute("id") === cardID) {
+        child.remove();
+        globalStore = globalStore.filter((element) => element.id !== cardID);
+        updateLocalStorage();
+      }
+    });
+  }
+});
