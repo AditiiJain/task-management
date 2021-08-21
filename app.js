@@ -1,6 +1,6 @@
 const taskContainer = document.querySelector(".task-container");
-const body = document.querySelector("body");
 const form = document.querySelector("form");
+const search = document.querySelector(".search");
 
 //globalStore array
 let globalStore = [];
@@ -61,7 +61,7 @@ const saveChanges = () => {
     taskType: document.getElementById("tasktype").value,
     taskDescription: document.getElementById("description").value,
   };
-  console.log(taskData);
+
   if (
     taskData.imageUrl !== "" &&
     taskData.taskTitle !== "" &&
@@ -73,8 +73,10 @@ const saveChanges = () => {
     updateLocalStorage();
     const createNewCard = newCard(taskData);
     taskContainer.insertAdjacentHTML("beforeend", createNewCard);
+    //refresh after every card inserted in the DOM.
+    location.reload();
   } else {
-    alert("All the fields are required."); 
+    alert("All the fields are required.");
   }
 };
 
@@ -94,6 +96,44 @@ taskContainer.addEventListener("click", (e) => {
       }
     });
   }
+});
+
+//search
+const filterTasks = (term) => {
+  // console.log(term);
+  console.log(taskContainer.children[0].children[0].children[2].children[0]);
+
+  Array.from(taskContainer.children)
+    .filter((task) => {
+      return !task.children[0].children[2].children[0].textContent
+        .toLowerCase()
+        .includes(term);
+    })
+    .forEach((task) => {
+      task.classList.add("filtered");
+    });
+  Array.from(taskContainer.children)
+    .filter((task) => {
+      return task.children[0].children[2].children[0].textContent
+        .toLowerCase()
+        .includes(term);
+    })
+    .forEach((task) => {
+      task.classList.remove("filtered");
+    });
+
+  // Array.from(todos.children)
+  //   .filter((todo) => {
+  //     return todo.textContent.toLowerCase().includes(term);
+  //   })
+  //   .forEach((todo) => {
+  //     todo.classList.remove("filtered");
+  //   });
+};
+search.addEventListener("keyup", () => {
+  const term = search.value.trim().toLowerCase();
+  // console.log(term)
+  filterTasks(term);
 });
 
 //edit
