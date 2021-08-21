@@ -1,6 +1,7 @@
 const taskContainer = document.querySelector(".task-container");
 const form = document.querySelector("form");
 const search = document.querySelector(".search");
+const taskModal = document.querySelector(".task__modal__body");
 
 //globalStore array
 let globalStore = [];
@@ -29,7 +30,7 @@ const newCard = ({
 }) => `<div class="col-md-6 col-lg-4 mt-4" id=${id}>
      <div class="card">
          <div class="card-header d-flex justify-content-end gap-2">
-             <button type="button" class="btn btn-outline-success" id=${id}> <i
+             <button type="button" class="btn btn-outline-success" id=${id} onclick="editCard.apply(this, arguments)"> <i
                      class="fas fa-pencil-alt" id=${id}></i></button>
              <button type="button" class="btn btn-outline-danger" id=${id}><i class="fas fa-trash" id=${id}></i></button>
 
@@ -44,7 +45,14 @@ const newCard = ({
              <span class="badge bg-primary p-2">${taskType}</span>
          </div>
          <div class="card-footer">
-             <button type="button" class="btn id=${id}btn-outline-primary float-end">Open Task</button>
+         <button
+         type="button"
+         class="btn btn-outline-primary float-right"
+         data-bs-toggle="modal"
+         data-bs-target="#showTask"
+         onclick="openTask.apply(this, arguments)"
+         id=${id}
+       >Open Task</button>
          </div>
      </div>
  </div>`;
@@ -52,6 +60,32 @@ const newCard = ({
 function updateLocalStorage() {
   localStorage.setItem("cards", JSON.stringify(globalStore));
 }
+
+const htmlModalContent = ({ id, taskTitle, taskDescription, imageUrl }) => {
+  const date = new Date(parseInt(id));
+  return ` <div id=${id} class="d-flex flex-column">
+  <div style="width:100%;height:300px;">
+  <img style="width:100%;height:100%;object-fit:cover;"
+  src=${
+    imageUrl ||
+    `https://images.unsplash.com/photo-1572214350916-571eac7bfced?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=755&q=80`
+  }
+  alt="bg image"
+  class="img-fluid place__holder__image mb-3"
+  />
+  </div>
+  <strong class="text-sm text-muted">Created on ${date.toDateString()}</strong>
+  <h2 class="my-3">${taskTitle}</h2>
+  <p class="lead">
+  ${taskDescription}
+  </p></div>`;
+};
+
+const openTask = (e) => {
+  if (!e) e = window.event;
+  const getTask = globalStore.filter(({ id }) => id === e.target.id);
+  taskModal.innerHTML = htmlModalContent(getTask[0]);
+};
 
 const saveChanges = () => {
   const taskData = {
@@ -125,57 +159,60 @@ search.addEventListener("keyup", () => {
 });
 
 //edit task
-taskContainer.addEventListener("click", (e) => {
+const editCard = (event) => {
+  event = window.event;
+  const targetID = event.target.id;
+  const tagname = event.target.tagName;
+
   let parentElement;
-  if (
-    e.target.tagName === "BUTTON" &&
-    e.target.classList.contains("btn-outline-success")
-  ) {
-    parentElement = e.target.parentNode.parentNode;
-  } else if (
-    e.target.tagName === "I" &&
-    e.target.classList.contains("fa-pencil-alt")
-  ) {
-    parentElement = e.target.parentNode.parentNode.parentNode;
+  if (tagname === "BUTTON") {
+    parentElement = event.target.parentNode.parentNode;
+  } else {
+    parentElement = event.target.parentNode.parentNode.parentNode;
   }
 
   let taskTitle = parentElement.childNodes[5].childNodes[1];
   let taskDescription = parentElement.childNodes[5].childNodes[3];
   let taskType = parentElement.childNodes[5].childNodes[5];
   let submitButton = parentElement.childNodes[7].childNodes[1];
-  taskDescription.setAttribute("contenteditable", "true");
+
   taskTitle.setAttribute("contenteditable", "true");
+  taskDescription.setAttribute("contenteditable", "true");
   taskType.setAttribute("contenteditable", "true");
-  submitButton.setAttribute("onclick", "saveEditChanges.apply(this,arguments)");
+  submitButton.setAttribute(
+    "onclick",
+    "saveEditchanges.apply(this, arguments)"
+  );
   submitButton.innerHTML = "Save Changes";
-});
+};
 
-const saveEditChanges = (e) => {
+const saveEditchanges = (event) => {
+  event = window.event;
+  const targetID = event.target.id;
+  console.log(targetID);
+  const tagname = event.target.tagName;
+
   let parentElement;
-  if (
-    e.target.tagName === "BUTTON" &&
-    e.target.classList.contains("btn-outline-success")
-  ) {
-    parentElement = e.target.parentNode.parentNode;
-  } else if (
-    e.target.tagName === "I" &&
-    e.target.classList.contains("fa-pencil-alt")
-  ) {
-    parentElement = e.target.parentNode.parentNode.parentNode;
+
+  if (tagname === "BUTTON") {
+    parentElement = event.target.parentNode.parentNode;
+  } else {
+    parentElement = event.target.parentNode.parentNode.parentNode;
   }
 
   let taskTitle = parentElement.childNodes[5].childNodes[1];
   let taskDescription = parentElement.childNodes[5].childNodes[3];
   let taskType = parentElement.childNodes[5].childNodes[5];
   let submitButton = parentElement.childNodes[7].childNodes[1];
+
   const updatedData = {
     taskTitle: taskTitle.innerHTML,
     taskType: taskType.innerHTML,
     taskDescription: taskDescription.innerHTML,
   };
-  console.log(e.target.id);
+
   globalStore = globalStore.map((task) => {
-    if (e.target.id === task.id)
+    if (task.id === targetID) {
       return {
         id: task.id,
         imageUrl: task.imageUrl,
@@ -183,8 +220,14 @@ const saveEditChanges = (e) => {
         taskType: updatedData.taskType,
         taskDescription: updatedData.taskDescription,
       };
+    }
     return task;
   });
+
   updateLocalStorage();
+  taskTitle.setAttribute("contenteditable", "false");
+  taskDescription.setAttribute("contenteditable", "false");
+  taskType.setAttribute("contenteditable", "false");
+  submitButton.removeAttribute("onclick");
+  submitButton.innerHTML = "Open Task";
 };
-//open modal
