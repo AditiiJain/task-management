@@ -1,4 +1,5 @@
 const taskContainer = document.querySelector(".task-container");
+const body = document.querySelector("body");
 const form = document.querySelector("form");
 
 //globalStore array
@@ -60,15 +61,24 @@ const saveChanges = () => {
     taskType: document.getElementById("tasktype").value,
     taskDescription: document.getElementById("description").value,
   };
-
-  globalStore.push(taskData);
-  form.reset();
-  updateLocalStorage();
-  const createNewCard = newCard(taskData);
-  taskContainer.insertAdjacentHTML("beforeend", createNewCard);
+  console.log(taskData);
+  if (
+    taskData.imageUrl !== "" &&
+    taskData.taskTitle !== "" &&
+    taskData.taskType !== "" &&
+    taskData.taskDescription !== ""
+  ) {
+    globalStore.push(taskData);
+    form.reset();
+    updateLocalStorage();
+    const createNewCard = newCard(taskData);
+    taskContainer.insertAdjacentHTML("beforeend", createNewCard);
+  } else {
+    alert("All the fields are required."); 
+  }
 };
 
-//deleting card by clicking trah button
+//deleting card by clicking trash button
 taskContainer.addEventListener("click", (e) => {
   if (
     (e.target.tagName === "BUTTON" || e.target.tagName === "I") &&
@@ -85,3 +95,7 @@ taskContainer.addEventListener("click", (e) => {
     });
   }
 });
+
+//edit
+//open modal
+//search
