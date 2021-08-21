@@ -29,8 +29,8 @@ const newCard = ({
 }) => `<div class="col-md-6 col-lg-4 mt-4" id=${id}>
      <div class="card">
          <div class="card-header d-flex justify-content-end gap-2">
-             <button type="button" class="btn btn-outline-success"> <i
-                     class="fas fa-pencil-alt"></i></button>
+             <button type="button" class="btn btn-outline-success" id=${id}> <i
+                     class="fas fa-pencil-alt" id=${id}></i></button>
              <button type="button" class="btn btn-outline-danger" id=${id}><i class="fas fa-trash" id=${id}></i></button>
 
          </div>
@@ -44,7 +44,7 @@ const newCard = ({
              <span class="badge bg-primary p-2">${taskType}</span>
          </div>
          <div class="card-footer">
-             <button type="button" class="btn btn-outline-primary float-end">Open Task</button>
+             <button type="button" class="btn id=${id}btn-outline-primary float-end">Open Task</button>
          </div>
      </div>
  </div>`;
@@ -100,9 +100,6 @@ taskContainer.addEventListener("click", (e) => {
 
 //search
 const filterTasks = (term) => {
-  // console.log(term);
-  console.log(taskContainer.children[0].children[0].children[2].children[0]);
-
   Array.from(taskContainer.children)
     .filter((task) => {
       return !task.children[0].children[2].children[0].textContent
@@ -121,21 +118,73 @@ const filterTasks = (term) => {
     .forEach((task) => {
       task.classList.remove("filtered");
     });
-
-  // Array.from(todos.children)
-  //   .filter((todo) => {
-  //     return todo.textContent.toLowerCase().includes(term);
-  //   })
-  //   .forEach((todo) => {
-  //     todo.classList.remove("filtered");
-  //   });
 };
 search.addEventListener("keyup", () => {
   const term = search.value.trim().toLowerCase();
-  // console.log(term)
   filterTasks(term);
 });
 
-//edit
+//edit task
+taskContainer.addEventListener("click", (e) => {
+  let parentElement;
+  if (
+    e.target.tagName === "BUTTON" &&
+    e.target.classList.contains("btn-outline-success")
+  ) {
+    parentElement = e.target.parentNode.parentNode;
+  } else if (
+    e.target.tagName === "I" &&
+    e.target.classList.contains("fa-pencil-alt")
+  ) {
+    parentElement = e.target.parentNode.parentNode.parentNode;
+  }
+
+  let taskTitle = parentElement.childNodes[5].childNodes[1];
+  let taskDescription = parentElement.childNodes[5].childNodes[3];
+  let taskType = parentElement.childNodes[5].childNodes[5];
+  let submitButton = parentElement.childNodes[7].childNodes[1];
+  taskDescription.setAttribute("contenteditable", "true");
+  taskTitle.setAttribute("contenteditable", "true");
+  taskType.setAttribute("contenteditable", "true");
+  submitButton.setAttribute("onclick", "saveEditChanges.apply(this,arguments)");
+  submitButton.innerHTML = "Save Changes";
+});
+
+const saveEditChanges = (e) => {
+  let parentElement;
+  if (
+    e.target.tagName === "BUTTON" &&
+    e.target.classList.contains("btn-outline-success")
+  ) {
+    parentElement = e.target.parentNode.parentNode;
+  } else if (
+    e.target.tagName === "I" &&
+    e.target.classList.contains("fa-pencil-alt")
+  ) {
+    parentElement = e.target.parentNode.parentNode.parentNode;
+  }
+
+  let taskTitle = parentElement.childNodes[5].childNodes[1];
+  let taskDescription = parentElement.childNodes[5].childNodes[3];
+  let taskType = parentElement.childNodes[5].childNodes[5];
+  let submitButton = parentElement.childNodes[7].childNodes[1];
+  const updatedData = {
+    taskTitle: taskTitle.innerHTML,
+    taskType: taskType.innerHTML,
+    taskDescription: taskDescription.innerHTML,
+  };
+  console.log(e.target.id);
+  globalStore = globalStore.map((task) => {
+    if (e.target.id === task.id)
+      return {
+        id: task.id,
+        imageUrl: task.imageUrl,
+        taskTitle: updatedData.taskTitle,
+        taskType: updatedData.taskType,
+        taskDescription: updatedData.taskDescription,
+      };
+    return task;
+  });
+  updateLocalStorage();
+};
 //open modal
-//search
