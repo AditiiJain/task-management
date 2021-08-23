@@ -1,7 +1,7 @@
 const taskContainer = document.querySelector(".task-container");
 const form = document.querySelector("form");
 const search = document.querySelector(".search");
-const taskModal = document.querySelector(".task__modal__body");
+const taskModal = document.querySelector(".task-modal-body");
 
 //globalStore array
 let globalStore = [];
@@ -74,11 +74,13 @@ const htmlModalContent = ({ id, taskTitle, taskDescription, imageUrl }) => {
   class="img-fluid place__holder__image mb-3"
   />
   </div>
-  <strong class="text-sm text-muted">Created on ${date.toDateString()}</strong>
+  <strong class="text-sm mt-2 text-muted">Created on ${date.toDateString()}</strong>
   <h2 class="my-3">${taskTitle}</h2>
   <p class="lead">
   ${taskDescription}
-  </p></div>`;
+  </p></div>
+  
+  `;
 };
 
 const openTask = (e) => {
@@ -183,6 +185,7 @@ const editCard = (event) => {
     "onclick",
     "saveEditchanges.apply(this, arguments)"
   );
+  submitButton.removeAttribute("data-bs-target")
   submitButton.innerHTML = "Save Changes";
 };
 
@@ -223,11 +226,13 @@ const saveEditchanges = (event) => {
     }
     return task;
   });
-
+  alert('Task successfully edited!')
   updateLocalStorage();
   taskTitle.setAttribute("contenteditable", "false");
   taskDescription.setAttribute("contenteditable", "false");
   taskType.setAttribute("contenteditable", "false");
   submitButton.removeAttribute("onclick");
   submitButton.innerHTML = "Open Task";
+  submitButton.setAttribute("data-bs-target","#showTask");
+  location.reload();
 };
